@@ -40,7 +40,7 @@ La matrice comparant les bactéries aux mammifères est disponible en format *.c
 
 ## Méthodes implémentées
 
-Nous avons utilisé l'algorithme de `bottom_minhach` dans le but de ne sélectionner que les *s* plus petits kmers (les kmers sont codés sous forme d'entiers). En faisant cela, nous avons introduit un biai lié à l'ordre lexical des nucléotides: A=0, C=1, T=2, G=3. 
+Nous avons utilisé l'algorithme de `bottom_minhash` dans le but de ne sélectionner que les *s* plus petits kmers (les kmers sont codés sous forme d'entiers). En faisant cela, nous avons introduit un biai lié à l'ordre lexical des nucléotides: A=0, C=1, T=2, G=3. 
 
 Afin d'éviter la sélection biaisée de kmers commençant par de nombreuses Adénines, nous avons utilisé une fonction de hachage `xorshift` mélangeant ainsi les kmers de manière prévisible (deux kmers identiques passant par cette fonction restent identiques en sortant de celle-ci).
 
