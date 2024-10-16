@@ -1,6 +1,6 @@
 import gzip
+import string
 from os import listdir, path
-
 
 def load_fasta(file_pointer):
     """ Loads a fasta formated file into a list of sequences.
@@ -9,20 +9,20 @@ def load_fasta(file_pointer):
     """
     texts = []
     txt = []
-
+    translation = str.maketrans("","","actgRrYyKkMmSsWwBbDdHhVvNn")
+    
     for line in file_pointer:
         if line[0] == '>':
             if len(txt) > 0:
                 texts.append("".join(txt))
             txt = []
         else:
-            txt.append(line.strip())
+            # txt.append(line.strip())
+            txt.append(line.strip().translate(translation))
 
     if len(txt) > 0:
         texts.append("".join(txt))
     return texts
-
-
 
 def load_directory(directory):
     """ Loads all the fasta files from a data directory into a dictionary.
@@ -33,6 +33,8 @@ def load_directory(directory):
     """
     print("Loading data from directory", directory)
     files = {}
+    i = 1
+    
     for name in listdir(directory):
         subpath = path.join(directory, name)
         # Look for sample directories
@@ -41,15 +43,17 @@ def load_directory(directory):
             files[name] = []
             for filename in listdir(subpath):
                 # Load raw fasta files
-                if filename.endswith(".fa") or filename.endswith(".fasta"):
+                if filename.endswith(".fa") or filename.endswith(".fasta") or filename.endswith(".fna"):
                     with open(path.join(subpath, filename)) as fp:
                         files[name] += load_fasta(fp)
+                
                 # Load gzipped fasta files
                 elif filename.endswith(".fa.gz") or filename.endswith(".fasta.gz"):
                     with gzip.open(path.join(subpath, filename), 'rt') as fp:
                         files[name] += load_fasta(fp)
                         print("Loaded", filename, len(files[name]))
-    
+        print(f"{i}/{len(listdir(directory))} sequences read")
+        i+=1
     return files
 
 

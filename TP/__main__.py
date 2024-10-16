@@ -1,81 +1,113 @@
-from TP.loading import load_directory
-from TP.kmers import stream_kmers, kmer2str
+from TP.loading import load_directory # type: ignore
+from TP.kmers import stream_kmers, kmer2str, xorshift # type: ignore
 import numpy as np
 import pandas as pd
 import time
+import heapq
 start_time = time.time()
 
-def create_index(fileA, k):
+def bottom_minhash(seq, k, s):
 	"""
-	Prépare l'index contenant en clé un kmer et en valeur son nombre d'occurences à partir d'une séquence et d'une longueur k.
+	Crée un sketch (une liste) contenant les s plus petits kmers hachés canoniques de taille k d'une séquence.
+	Les kmers sont ordonnés de manière croissante (ils sont codés sous forme d'entiers après le hachage). 
 	----------
 	Params:
-		- fileA: séquences ADN du fichier 1.
-		- k: taille des k-mers.
+		- seq: list;  la séquence à analyser
+		- k: int; taille des k-mers.
+		- s: int; taille du sketch
 	----------
 	Returns:
-		- index: Le dictionnaire avec en clé un kmer et en valeur son nombre d'occurences.
+		- sorted_sketch: la liste à retourner
 	"""
-	# Creating the index based on the first sequence
-	index = {}
-	for kmer in stream_kmers(fileA, k):
-		if kmer not in index:
-			index[kmer] = 1
-		else:
-			index[kmer] +=1
-	return index
 
-def jaccard(indexA, fileB, k):
+	# Création du sketch
+	sketch = [-np.inf for _ in range(s)]
+	heapq.heapify(sketch)
+
+	for kmer in stream_kmers(seq,k):
+		if -kmer > sketch[0]:
+			heapq.heappushpop(sketch, -kmer)
+
+	# Tri du sketch
+	sorted_sketch = []
+	while sketch:
+		sorted_sketch.append(heapq.heappop(sketch))
+	
+	return sorted_sketch
+
+def jaccard(sketchA, sketchB):
 	"""
-	Calcule l'indice de Jaccard entre deux fichiers de séquences d'ADN.
+	Calcule l'indice de Jaccard entre deux listes.
 	----------
 	Params:
-		- fileA: séquences ADN du fichier 1.
-		- fileB: séquences ADN du fichier 2.
-		- k: taille des k-mers.
+		- sketchA: La liste 1.
+		- sketchB: La liste 2.
 	----------
 	Returns:
-		- jaccard_index: Indice de Jaccard entre les 2 fichiers.
+		- intersection/union : float correspondant à l'indice de jaccard
 	"""
+	# i, j: int; correspondent aux indices d'itération sur la 1ère et 2e liste respectivement
+	i = 0
+	j = 0
 
-    # Calculation of the jaccard distance
-	union = sum(indexA.values())
+	union = 0
 	intersection = 0
-	
-	for kmer in stream_kmers(fileB, k):
-		if kmer in indexA and indexA[kmer] > 0:
-			intersection += 1
-			indexA[kmer] -= 1
-		else:
+
+	while i < len(sketchA) and j < len(sketchB):
+
+		if sketchA[i] < sketchB[j]:
 			union += 1
-	
+			i += 1
+
+		elif sketchA[i] > sketchB[j]:
+			union += 1
+			j += 1
+
+		elif sketchA[i] == sketchB[j]:
+			union += 1
+			intersection += 1
+			i += 1
+			j += 1
+
+	union += abs(len(sketchA) - i + len(sketchB) - j)
 	return intersection/union
 
 
 if __name__ == "__main__":
-    print("Computation of Jaccard similarity between files")
+	print("Computation of Jaccard similarity between files")
+	
 
-    # Load all the files in a dictionary
-    files = load_directory("data")
-    k = 21
-    
-    print("Computing Jaccard similarity for all pairs of samples")
-    filenames = list(files.keys())
-    jaccard_matrix = np.zeros((len(filenames), len(filenames)))
-    np.fill_diagonal(jaccard_matrix, 1)
+	# Lecture des séquences
+	files = load_directory("data")
+	filenames = list(files.keys())
 
-    for i in range(len(files)):
+	# Initialisation des paramètres
+	k = 21		# Taille des kmers
+	s = 1000	# Tailel des sketchs
 
-		# On créé l'index de la séquence A ici car il sera le même pour tous les B suivantes.
-        indexA = create_index(files[filenames[i]], k)
+	# Création des sketchs.
+	print("\nCreation of the sketches.")
+	sketch_list = []
+	for i in range(len(filenames)):
+		sketch_list.append(bottom_minhash(files[filenames[i]], k, s))
+		print(f"{i+1}/{len(filenames)} sketches done")
+	print()
 
-        for j in range(i + 1, len(files)):
-			
-            jaccard_score = jaccard(indexA.copy(), files[filenames[j]], k) # Puisque l'index sera modifié dans la fonction, on doit créer une copie avec index.copy()
-            jaccard_matrix[i][j] = jaccard_score
-            jaccard_matrix[j][i] = jaccard_score
+	# Calcul des indices de jaccard
+	jaccard_matrix = np.zeros((len(filenames), len(filenames)))		# Matrice contenant les résultats
+	np.fill_diagonal(jaccard_matrix, 1)								# L'indice de jaccard de deux séquences identiques est de 1
 
-            print(filenames[i], filenames[j], jaccard_score)
+	for i in range(len(filenames)):
+		for j in range(i+1, len(filenames)):
+				jaccard_score = jaccard(sketch_list[i], sketch_list[j])
 
-    print("\n",pd.DataFrame(data=jaccard_matrix, columns = filenames, index=filenames))
-    print("\n--- %s seconds ---" % (time.time() - start_time))
+				jaccard_matrix[i][j] = jaccard_score
+				jaccard_matrix[j][i] = jaccard_score
+
+				print(filenames[i], filenames[j], jaccard_score)
+
+	jaccard_df = pd.DataFrame(data=jaccard_matrix, columns = filenames, index=filenames)
+	#jaccard_df.to_csv("jaccard_df.csv", index_label = "Species")
+	
+	print("\njaccard_df.csv created")
+	print("\n--- %s seconds ---" % (time.time() - start_time))
