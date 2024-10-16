@@ -103,3 +103,26 @@ Dans mon dépôt est attendu :
 * Un fichier RENDU.md qui contient un rapport succinct sur mon rendu. Ce rapport doit contenir la matrice des distances entre échantillons, un commentaire sur ce que cette matrice m'apprend et une description des méthodes implémentées.
 
 Le TP peut être rendu par bionôme. Je dois l'indiquer dans RENDU.md en précisant les prénoms et noms.
+
+
+### Attendus pour le TP 1
+
+Le code que vous avez produit lors de la première séance de TP doit s'exécuter en quelques secondes au maximum.
+La matrice des identitées de Jaccard doit être très proche de:
+|                 | GCA_000013265.1 | GCA_000005845.2 | GCA_000069965.1 | GCA_000008865.2 | GCA_030271835.1 |
+| :-: | :-: | :-: | :-: | :-: | :-: |
+| (1) GCA_000013265.1 | 1.0             | 0.3410          | 0.0024          | 0.3071          | 0.0024 |
+| (2) GCA_000005845.2 |                 | 1.0             | 0.0026          | 0.4365          | 0.0026 |
+| (3) GCA_000069965.1 |                 |                 | 1.0             | 0.0023          | 0.0311 |
+| (4) GCA_000008865.2 |                 |                 |                 | 1.0             | 0.0023 |
+| (5) GCA_030271835.1 |                 |                 |                 |                 | 1.0 |
+
+
+### Rendu TP 2
+
+La matrice de jaccad doit être racalculée en utilisant **une méthode d'échantillonage** de votre choix parmis celles vues en TD.
+En plus des 3 bactéries, vous devrez également comparer les kmers issus de ces 3 organismes :
+
+* [Un Humain](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/)
+* [Une souris](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001635.27/)
+* [Un singe](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_029289425.3/)
