@@ -36,6 +36,7 @@ Temps de calcul: ~1h15
 Les matrices présentent les indices de Jaccard entre les séquences d'ADN de différentes espèces. Chaque valeur représente la similarité entre les k-mers des espèces une à une. Une valeur proche de 1.0 indique une grande similarité, tandis qu'une valeur proche de 0.0 indique une faible similarité.
 En ce qui concerne les bactéries, on obtient des résultats similaires à l'implémentation précédente: les 3 espèces les plus proches sont toujours GCA_000005845.2, GCA_000008865.2 et GCA_000013265.1.
 Dans la matrice des mammifères, on observe une similarité relativement haute entre l'Homo Sapiens (GCF_000001405.40) et le Pan paniscus (GCA_029289425.3) avec un indice de 0.47 environ. Le Mus Musculus cependant est relativement éloigné des deux autres espèces.
+La matrice comparant les bactéries aux mammifères est disponible en format *.csv*, il n'y a aucune similarité visible avec les indices de Jaccard obtenus.
 
 ## Méthodes implémentées
 
