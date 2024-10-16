@@ -107,7 +107,7 @@ if __name__ == "__main__":
 				print(filenames[i], filenames[j], jaccard_score)
 
 	jaccard_df = pd.DataFrame(data=jaccard_matrix, columns = filenames, index=filenames)
-	#jaccard_df.to_csv("jaccard_df.csv", index_label = "Species")
+	jaccard_df.to_csv("jaccard_df.csv", index_label = "Species")
 	
 	print("\njaccard_df.csv created")
 	print("\n--- %s seconds ---" % (time.time() - start_time))
